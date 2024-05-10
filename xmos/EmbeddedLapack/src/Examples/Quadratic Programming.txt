@@ -1,0 +1,73 @@
+#include <time.h>
+#include "LinearAlgebra/declareFunctions.h"
+
+int main() {
+
+	clock_t start, end;
+	float cpu_time_used;
+	start = clock();
+	
+	/*
+	 * Assume that you want to solve the linear equation Ax = b, with constraints/limits on x and A*x
+	 * Let: H = A'*A
+	 *      g = A'*b;
+	 */
+
+	// Hessian matrix
+	double H[2*2] = {10,    33,
+		             33,  117};
+
+	// Gradient vector
+	double g[2] = {1300,
+			       5100};
+
+	// Lower limits for u
+	double ulb_vec[2] = {5,
+						 5};
+
+	// Upper limits for u
+	double uub_vec[2] = {20,
+	                     20};
+
+	// In Control theory, this can be used to set limits on output signals. Check out my CControl repository
+	double A[2*2] = {3,   9,
+			         1,   6};
+
+	// Lower limit for A*u
+	double ylb_vec[2] = {20,
+	                     88};
+
+	// Upper limit for A*u
+	double yub_vec[2] = {300,
+	                     400};
+
+	int nWSR = 10; // Set this to a number larger than 0
+	double u[5]; // Our solution
+	quadprog(H, g, A, ulb_vec, uub_vec, ylb_vec, yub_vec, &nWSR, u, 2, 2);
+
+	printf("Optimal solution - Check with Octave code below - :\n");
+	print(u, 2, 1);
+	printf("Set SHOW_QP_OUTPUT to TRUE to begin with in declareFunctions.h\n");
+
+	end = clock();
+	cpu_time_used = ((float) (end - start)) / CLOCKS_PER_SEC;
+	printf("\nTotal speed  was %f,", cpu_time_used);
+	return 0;
+}
+
+/**
+    OCTAVE CODE
+
+    A = [3 9; 1 6]
+	b = [300; 400]
+
+	H = A'*A
+	g = A'*b
+
+	LB = [5; 5];
+	UB = [20; 20];
+	A_LB = [20; 88];
+	A_UB = b;
+
+	[solution, OBJ, INFO] = qp ([], H, g, [], [], LB, UB, A_LB, A, A_UB)
+ */
